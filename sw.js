@@ -1,4 +1,5 @@
-const cacheName = 'c62c-5c92-2644-e58d';
+let cacheName = 'c62c-5c92-2144-e58d';
+let array128Bit = new Uint32Array(4);
 const contentToCache = [
   '/BicycleSpeed/index2.html',
   '/BicycleSpeed/image/bicyclemove.gif',
@@ -29,3 +30,23 @@ self.addEventListener('fetch', (e) => {
   //console.log(e.request.url);
   e.respondWith(fetch(e.request).catch(() => caches.match(e.request.url)));
 });
+self.onmessage = (e) => {
+  crypto.getRandomValues(array128Bit);
+  cacheName = array128Bit.toString();
+  e.waitUntil(
+    caches
+      .open(cacheName)
+      .then((cache) => cache.addAll(contentToCache))
+      .then(() => {
+        caches.keys().then((keys) => {
+          return Promise.all(
+            keys.map((key) => {
+              if (key !== cacheName) {
+                return caches.delete(key);
+              }
+            })
+          );
+        });
+      })
+  );
+};
